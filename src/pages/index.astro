@@ -1,21 +1,1408 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import ContextAlert from '../components/ContextAlert.astro';
-import Markdown from '../components/Markdown.astro';
-
-const explainer = `
-An Astro website can go way beyond static pages - on the right platform.
-
-Netlify supports not only [Streaming SSR](https://docs.astro.build/en/guides/server-side-rendering/#html-streaming) and fast [Edge Middleware](https://docs.astro.build/en/guides/middleware/), but also [on-demand revalidation](https://www.netlify.com/blog/cache-tags-and-purge-api-on-netlify/) and [stale-while-revalidate](https://www.netlify.com/blog/swr-and-fine-grained-cache-control/). 
-Any page or data can be rebuilt only when needed, without site visitors ever getting a performance hit.
-`;
 ---
 
-<Layout title="Welcome to Astro.">
-    <ContextAlert class="mb-8" />
-    <h1 class="mb-10">Netlify Platform Starter for Astro</h1>
-    <Markdown content={explainer} class="mb-10 text-lg" />
-    <p>
-        <a href="https://docs.netlify.com/frameworks/astro/" class="btn btn-lg sm:min-w-64">Read the Docs</a>
-    </p>
-</Layout>
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Anki Turbo IA - V34 (Controle de Cores)</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <style>
+            :root {
+                --bg-dark: #1e1e1e;
+                --bg-panel: #252526;
+                --border: #3e3e42;
+                --accent: #007acc;
+                --text: #d4d4d4;
+                --success: #27ae60;
+                --error: #e74c3c;
+            }
+
+            body {
+                margin: 0;
+                font-family: 'Segoe UI', system-ui, sans-serif;
+                background-color: var(--bg-dark);
+                color: var(--text);
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            header {
+                background-color: #333333;
+                padding: 10px 20px;
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 15px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            }
+
+            .nav-tools {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .btn {
+                background-color: var(--accent);
+                color: white;
+                border: none;
+                padding: 8px 14px;
+                cursor: pointer;
+                border-radius: 4px;
+                font-size: 13px;
+                font-weight: 600;
+                transition: 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn:hover {
+                background-color: #0062a3;
+            }
+
+            .btn.secondary {
+                background-color: #444;
+            }
+
+            .btn.success {
+                background-color: var(--success);
+            }
+
+            .btn.danger {
+                background-color: #c0392b;
+            }
+
+            .main-container {
+                display: flex;
+                flex: 1;
+                overflow: hidden;
+            }
+
+            .editors-col {
+                width: 30%;
+                display: flex;
+                flex-direction: column;
+                border-right: 1px solid var(--border);
+            }
+
+            .fields-col {
+                width: 25%;
+                border-right: 1px solid var(--border);
+                background-color: var(--bg-panel);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .preview-col {
+                flex: 1;
+                background-color: #e0e0e0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+                overflow-y: auto;
+                position: relative;
+            }
+
+            .tab-header {
+                display: flex;
+                background: #2d2d2d;
+            }
+
+            .tab {
+                padding: 10px 15px;
+                cursor: pointer;
+                background: transparent;
+                border: none;
+                color: #999;
+                border-bottom: 2px solid transparent;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .tab.active {
+                background: var(--bg-panel);
+                color: white;
+                border-bottom: 2px solid var(--accent);
+            }
+
+            .editor-container {
+                flex: 1;
+                display: none;
+            }
+
+            .editor-container.active {
+                display: block;
+            }
+
+            textarea {
+                width: 100%;
+                height: 100%;
+                background-color: var(--bg-panel);
+                color: #d4d4d4;
+                border: none;
+                padding: 10px;
+                font-family: 'Consolas', monospace;
+                font-size: 13px;
+                resize: none;
+                box-sizing: border-box;
+                outline: none;
+            }
+
+            .fields-header {
+                padding: 10px;
+                background: #2d2d2d;
+                font-weight: bold;
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12px;
+            }
+
+            .fields-scroll {
+                flex: 1;
+                overflow-y: auto;
+                padding: 15px;
+            }
+
+            .field-group {
+                margin-bottom: 12px;
+            }
+
+            .field-group label {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 10px;
+                color: #888;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+
+            .field-input {
+                width: 100%;
+                background: #3c3c3c;
+                border: 1px solid #3e3e42;
+                color: white;
+                padding: 6px;
+                border-radius: 4px;
+                font-family: inherit;
+                font-size: 13px;
+                box-sizing: border-box;
+            }
+
+            #card-preview {
+                width: 100%;
+                max-width: 800px;
+                min-height: 200px;
+            }
+
+            #import-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.85);
+                z-index: 1000;
+                display: none;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(4px);
+            }
+
+            .modal-content {
+                background: var(--bg-panel);
+                padding: 30px;
+                border-radius: 12px;
+                width: 550px;
+                border: 1px solid var(--border);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            }
+
+            .deck-nav {
+                background: #444;
+                padding: 5px 15px;
+                border-radius: 20px;
+                display: flex;
+                gap: 15px;
+                align-items: center;
+                font-size: 13px;
+                color: white;
+                font-weight: bold;
+            }
+
+            .deck-nav i {
+                cursor: pointer;
+                transition: 0.2s;
+            }
+
+            .deck-nav i:hover {
+                color: var(--accent);
+                transform: scale(1.2);
+            }
+
+            .loading-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.85);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                gap: 15px;
+                color: white;
+                z-index: 500;
+            }
+
+            .progress-box {
+                width: 80%;
+                background: #333;
+                height: 10px;
+                border-radius: 5px;
+                overflow: hidden;
+                border: 1px solid #444;
+            }
+
+            .progress-bar {
+                width: 0%;
+                height: 100%;
+                background: var(--success);
+                transition: 0.4s;
+            }
+
+            .status-bar {
+                position: fixed;
+                bottom: 15px;
+                right: 15px;
+                background: var(--accent);
+                color: white;
+                padding: 8px 20px;
+                border-radius: 30px;
+                font-size: 12px;
+                display: none;
+                z-index: 2000;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <h1 style="font-size: 16px; margin: 0;">
+                    <i class="fas fa-bolt" style="color: var(--accent); margin-right: 8px;"></i>
+                    ANKI PROFESSOR IA
+                </h1>
+                <div class="deck-nav">
+                    <i class="fas fa-arrow-left" onclick="prevCard()" title="Anterior"></i>
+                    <span id="deck-counter">Card 1 / 1</span>
+                    <i class="fas fa-arrow-right" onclick="nextCard()" title="Próximo"></i>
+                </div>
+            </div>
+            <div class="nav-tools">
+                <button class="btn success" onclick="openImportModal()">
+                    <i class="fas fa-file-pdf"></i>
+                    Importar PDF
+                </button>
+                <button class="btn danger" onclick="clearDeck()">
+                    <i class="fas fa-trash-alt"></i>
+                    Limpar Tudo
+                </button>
+                <button class="btn" onclick="exportStructuredCSV()">
+                    <i class="fas fa-file-csv"></i>
+                    Exportar Organizado (Anki)
+                </button>
+
+                <button id="btn-flip" class="btn secondary" onclick="flipCard()">
+                    <i class="fas fa-sync-alt"></i>
+                    Mostrar Resposta
+                </button>
+
+                <button class="btn secondary" onclick="toggleDarkModePreview()">
+                    <i class="fas fa-moon"></i>
+                    Testar Dark Mode
+                </button>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <div class="editors-col">
+                <div class="tab-header">
+                    <button class="tab active" onclick="switchTab('front', this)">Frente</button>
+                    <button class="tab" onclick="switchTab('back', this)">Verso</button>
+                    <button class="tab" onclick="switchTab('css', this)">Estilo</button>
+                </div>
+                <div id="editor-front" class="editor-container active">
+                    <textarea id="code-front" spellcheck="false"></textarea>
+                </div>
+                <div id="editor-back" class="editor-container">
+                    <textarea id="code-back" spellcheck="false"></textarea>
+                </div>
+                <div id="editor-css" class="editor-container">
+                    <textarea id="code-css" spellcheck="false"></textarea>
+                </div>
+            </div>
+
+            <div class="fields-col">
+                <div class="fields-header">
+                    <span>CAMPOS ATUAIS</span>
+                    <div style="display: flex; gap: 5px;">
+                        <button
+                            class="btn secondary"
+                            style="padding: 4px 8px; font-size: 10px;"
+                            onclick="addNewCard()"
+                        >
+                            + Novo
+                        </button>
+                        <button
+                            class="btn danger"
+                            style="padding: 4px 8px; font-size: 10px;"
+                            onclick="deleteCurrentCard()"
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="fields-scroll" id="fields-container"></div>
+            </div>
+
+            <div class="preview-col">
+                <div id="loading-ia" class="loading-overlay">
+                    <i class="fas fa-chalkboard-teacher fa-3x" style="color: #007acc; margin-bottom: 15px;"></i>
+                    <span
+                        id="loading-text"
+                        style="font-weight: bold; font-size: 16px; margin-bottom: 10px;"
+                        >Analisando Simulado...</span
+                    >
+                    <div class="progress-box"><div id="main-progress" class="progress-bar"></div></div>
+                    <span id="loading-subtext" style="font-size: 12px; margin-top: 5px; color: #aaa;"
+                        >Extraindo questões e gerando resumo visual...</span
+                    >
+                </div>
+                <div id="style-injection"></div>
+                <div id="anki-wrapper" style="width: 100%; display: flex; justify-content: center;">
+                    <div id="card-preview"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="import-modal">
+            <div class="modal-content">
+                <h2 style="margin-top: 0;">
+                    <i class="fas fa-graduation-cap" style="color: var(--accent);"></i>
+                    Professor Virtual
+                </h2>
+                <p style="font-size: 13px; color: #aaa; line-height: 1.4;">
+                    Envie seu PDF. A IA irá:
+                    <br />1. Identificar "Disciplinas/Assuntos".
+                    <br />2. <b>Resumo do Professor:</b> Rico em gatilhos visuais e cores para facilitar a
+                    memorização.
+                    <br />3. <b>Gatilhos Mentais:</b><br />
+                    🔴 <span style="color: #e74c3c; font-weight: bold;">CRÍTICO:</span> Negação, Exceção,
+                    Proibição.<br />
+                    🟠 <span style="color: #e67e22; font-weight: bold;">DADOS:</span> Números e Prazos.<br />
+                    🔵 <span style="color: #3498db; font-weight: bold;">TERMOS:</span> Conceitos chave.
+                </p>
+                <div
+                    style="background: #333; padding: 20px; border-radius: 8px; border: 1px dashed #555; text-align: center; margin: 20px 0;"
+                >
+                    <input type="file" id="pdf-input" accept="application/pdf" />
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn secondary" onclick="closeImportModal()">Cancelar</button>
+                    <button class="btn success" onclick="startUltraProcess()">🚀 Iniciar Extração</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar" id="status-msg"></div>
+
+        <script is:inline>
+            pdfjsLib.GlobalWorkerOptions.workerSrc =
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const apiKey = '';
+
+            let deck = [];
+            let currentCardIndex = 0;
+            let currentSide = 'front';
+            let isDarkMode = false;
+
+            const defaultCardStructure = {
+                ID: '',
+                Banca: '',
+                Matéria: 'Geral',
+                Assunto: 'Diversos',
+                'Texto Associado': '',
+                Questão: '',
+                'Opção 1 (A)': '',
+                'Opção 2 (B)': '',
+                'Opção 3 (C)': '',
+                'Opção 4 (D)': '',
+                'Opção 5 (E)': '',
+                'Resposta Correta': '',
+                'Explicação Universal': ''
+            };
+
+            /* --- CÓDIGO FRENTE (ANKI COMPATÍVEL - V34) --- */
+            const defaultFront = `<div class="anki-card-container">
+    <div class="cabeçalho">
+        <div class="materia-container">
+            <span class="tag-materia">📚 {{Matéria}}</span>
+        </div>
+        <h1 class="titulo-assunto">{{Assunto}}</h1>
+    </div>
+
+    <div class="conteudo">
+        {{#Texto Associado}}
+        <button class="toggle-btn" onclick="toggleEl('texto-associado', this, 'Ver Texto Associado', 'Ocultar Texto')">
+            Ver Texto Associado
+        </button>
+        <div id="texto-associado" class="texto-oculto">
+            {{Texto Associado}}
+        </div>
+        {{/Texto Associado}}
+
+        <div id="PerguntaTexto">
+            {{Questão}}
+        </div>
+
+        <div id="quiz-area">
+            <div class="container-opcao" id="opt-A" 
+                 onclick="selectAnswer('A')" 
+                 onmousedown="handleRisk(event, this)" 
+                 ondblclick="handleRisk(event, this)">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">A.</div>
+                <div class="texto-coluna">{{Opção 1 (A)}}</div>
+            </div>
+            <div class="container-opcao" id="opt-B" 
+                 onclick="selectAnswer('B')" 
+                 onmousedown="handleRisk(event, this)" 
+                 ondblclick="handleRisk(event, this)">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">B.</div>
+                <div class="texto-coluna">{{Opção 2 (B)}}</div>
+            </div>
+            <div class="container-opcao" id="opt-C" 
+                 onclick="selectAnswer('C')" 
+                 onmousedown="handleRisk(event, this)" 
+                 ondblclick="handleRisk(event, this)">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">C.</div>
+                <div class="texto-coluna">{{Opção 3 (C)}}</div>
+            </div>
+            <div class="container-opcao" id="opt-D" 
+                 onclick="selectAnswer('D')" 
+                 onmousedown="handleRisk(event, this)" 
+                 ondblclick="handleRisk(event, this)">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">D.</div>
+                <div class="texto-coluna">{{Opção 4 (D)}}</div>
+            </div>
+            {{#Opção 5 (E)}}
+            <div class="container-opcao" id="opt-E" 
+                 onclick="selectAnswer('E')" 
+                 onmousedown="handleRisk(event, this)" 
+                 ondblclick="handleRisk(event, this)">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">E.</div>
+                <div class="texto-coluna">{{Opção 5 (E)}}</div>
+            </div>
+            {{/Opção 5 (E)}}
+        </div>
+    </div>
+
+    <div class="footer">
+        <span class="settings-trigger" onclick="toggleSettings()">⚙️ Configurações</span>
+        <div id="settings-pnl" class="settings-panel">
+            <div class="setting-item zoom-controls">
+                <span>Zoom:</span>
+                <button class="mini-btn" onclick="zoom(0.1)">+</button>
+                <button class="mini-btn" onclick="zoom(-0.1)">-</button>
+            </div>
+            <label class="setting-item">
+                <input type="checkbox" id="shuffle-toggle" onchange="toggleShuffle(this)">
+                <span>Embaralhar</span>
+            </label>
+            <label class="setting-item">
+                <input type="checkbox" id="stats-toggle" onchange="toggleStats(this)">
+                <span>Estatísticas</span>
+            </label>
+             <label class="setting-item" style="border-top:1px solid rgba(0,0,0,0.1); padding-top:8px; margin-top:5px;">
+                <input type="checkbox" id="colors-toggle" onchange="toggleColors(this)" checked>
+                <span>🎨 Realçar Gatilhos</span>
+            </label>
+            <div class="setting-item" onclick="manageStats()">
+                <span>📊 Zerar/Editar Stats</span>
+            </div>
+        </div>
+        <span class="card-id">ID: {{ID}}</span>
+    </div>
+</div>
+
+<script>
+    var cardId = "{{ID}}"; 
+
+    function selectAnswer(opt) {
+        document.querySelectorAll('.container-opcao').forEach(el => el.classList.remove('selected-temp'));
+        var el = document.getElementById('opt-'+opt);
+        if(el) el.classList.add('selected-temp');
+        sessionStorage.setItem("anki_ans_" + cardId, opt);
+        sessionStorage.setItem("anki_can_score_" + cardId, "true");
+    }
+
+    window.handleRisk = function(e, el) {
+        if (e.button === 1 || e.type === 'dblclick') {
+            e.preventDefault();
+            e.stopPropagation(); 
+            el.classList.toggle('riscado');
+            return false;
+        }
+    }
+
+    var saved = sessionStorage.getItem("anki_ans_" + cardId);
+    if(saved) {
+        var el = document.getElementById('opt-'+saved);
+        if(el) el.classList.add('selected-temp');
+    }
+
+    window.toggleEl = function(id, btn, t1, t2) {
+        var el = document.getElementById(id);
+        if(el.style.display === 'block') { el.style.display='none'; btn.innerText=t1; }
+        else { el.style.display='block'; btn.innerText=t2; }
+    }
+
+    /* CONFIGURAÇÕES GERAIS */
+    window.toggleSettings = function() {
+        var pnl = document.getElementById('settings-pnl');
+        pnl.style.display = pnl.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    // Gerenciamento de Cores
+    function initColorCheck() {
+        var chk = document.getElementById('colors-toggle');
+        var pref = localStorage.getItem('anki_colors_pref');
+        var isEnabled = pref === null ? true : (pref === 'true'); // Default true
+        if(chk) chk.checked = isEnabled;
+        applyColors(isEnabled);
+    }
+    window.toggleColors = function(el) {
+        var isEnabled = el.checked;
+        localStorage.setItem('anki_colors_pref', isEnabled);
+        applyColors(isEnabled);
+    }
+    function applyColors(isEnabled) {
+        var container = document.querySelector('.anki-card-container');
+        if(container) {
+            if(isEnabled) container.classList.remove('disable-colors');
+            else container.classList.add('disable-colors');
+        }
+    }
+
+    window.manageStats = function() {
+        var db = JSON.parse(localStorage.getItem('anki_stats_v1') || '{}');
+        var data = db[cardId] || { ok: 0, nok: 0 };
+        var choice = prompt("Gerenciar Stats (ID: " + cardId + ")\\n✅ " + data.ok + " | ❌ " + data.nok + "\\n\\n0 - Zerar\\n1 - Editar");
+        if (choice === '0') { db[cardId] = { ok: 0, nok: 0 }; alert("Zerado."); }
+        else if (choice === '1') {
+            var o = prompt("Novos Acertos:", data.ok); var n = prompt("Novos Erros:", data.nok);
+            if (o!==null&&n!==null) db[cardId] = { ok: parseInt(o)||0, nok: parseInt(n)||0 };
+        }
+        localStorage.setItem('anki_stats_v1', JSON.stringify(db));
+        renderStats();
+    };
+
+    var currentZoom = parseFloat(localStorage.getItem('anki_zoom_pref')) || 1;
+    function applyZoom() { document.querySelector('.conteudo').style.zoom = currentZoom; }
+    window.zoom = function(val) {
+        currentZoom += val;
+        if(currentZoom < 0.5) currentZoom = 0.5;
+        localStorage.setItem('anki_zoom_pref', currentZoom);
+        applyZoom();
+    }
+    applyZoom();
+
+    function initStatsCheck() {
+        var chk = document.getElementById('stats-toggle');
+        if(chk) chk.checked = localStorage.getItem('anki_show_stats_pref') === 'true';
+    }
+    window.toggleStats = function(el) { localStorage.setItem('anki_show_stats_pref', el.checked); renderStats(); }
+    initStatsCheck();
+
+    function initShuffle() {
+        var chk = document.getElementById('shuffle-toggle');
+        var shouldShuffle = localStorage.getItem('anki_shuffle_pref') === 'true';
+        if(chk) chk.checked = shouldShuffle;
+        if(shouldShuffle) {
+            var quizArea = document.getElementById('quiz-area');
+            var options = Array.from(quizArea.children);
+            var letters = ['A.', 'B.', 'C.', 'D.', 'E.'];
+            for (var i = options.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            options.forEach((el, index) => {
+                quizArea.appendChild(el);
+                var letterDiv = el.querySelector('.letra-coluna');
+                if(letterDiv && letters[index]) letterDiv.innerText = letters[index];
+            });
+        }
+    }
+    window.toggleShuffle = function(el) { localStorage.setItem('anki_shuffle_pref', el.checked); location.reload(); }
+
+    // Inits
+    initShuffle();
+    initColorCheck();
+
+<\/script>`;
+
+            /* --- CÓDIGO VERSO (ANKI COMPATÍVEL - V34) --- */
+            const defaultBack = `<div class="anki-card-container">
+    <div class="cabeçalho">
+        <div class="materia-container">
+            <span class="tag-materia">📚 {{Matéria}}</span>
+        </div>
+        <h1 class="titulo-assunto">{{Assunto}}</h1>
+    </div>
+
+    <div class="conteudo">
+        <div id="stats-area" class="stats-box">
+            <div id="card-pie" class="pie-chart"></div>
+            <div class="stats-legend">
+                <div class="legend-item"><div class="dot ok"></div> <span id="txt-ok">Acertos: 0 (0%)</span></div>
+                <div class="legend-item"><div class="dot nok"></div> <span id="txt-nok">Erros: 0 (0%)</span></div>
+            </div>
+        </div>
+
+        <div id="res-banner" class="banner-resultado"></div>
+
+        <div id="QuestionBack" style="opacity: 0.7; font-size: 0.9em; margin-bottom: 20px;">
+            {{Questão}}
+        </div>
+
+        <div id="res-list">
+            <div class="back-option-container" id="res-container-A">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">A.</div>
+                <div class="texto-coluna">{{Opção 1 (A)}}</div>
+            </div>
+            <div class="back-option-container" id="res-container-B">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">B.</div>
+                <div class="texto-coluna">{{Opção 2 (B)}}</div>
+            </div>
+            <div class="back-option-container" id="res-container-C">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">C.</div>
+                <div class="texto-coluna">{{Opção 3 (C)}}</div>
+            </div>
+            <div class="back-option-container" id="res-container-D">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">D.</div>
+                <div class="texto-coluna">{{Opção 4 (D)}}</div>
+            </div>
+             {{#Opção 5 (E)}}
+            <div class="back-option-container" id="res-container-E">
+                <div class="check-icon"></div>
+                <div class="letra-coluna">E.</div>
+                <div class="texto-coluna">{{Opção 5 (E)}}</div>
+            </div>
+            {{/Opção 5 (E)}}
+        </div>
+
+        <div class="spoiler-box">
+            <div class="spoiler-header" onclick="toggleEl('exp-content')">
+                <span>🎓 Resumo do Professor</span> <span>▼</span>
+            </div>
+            <div id="exp-content" class="spoiler-content" style="display:block; animation: fadeIn 0.5s;">
+                {{#Explicação Universal}}
+                    {{Explicação Universal}}
+                {{/Explicação Universal}}
+                {{^Explicação Universal}}
+                    <p><b>Resposta: {{Resposta Correta}}</b></p>
+                {{/Explicação Universal}}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <span class="settings-trigger" onclick="toggleSettings()">⚙️ Configurações</span>
+        <div id="settings-pnl" class="settings-panel">
+            <div class="setting-item zoom-controls">
+                <span>Zoom:</span>
+                <button class="mini-btn" onclick="zoom(0.1)">+</button>
+                <button class="mini-btn" onclick="zoom(-0.1)">-</button>
+            </div>
+            <label class="setting-item">
+                <input type="checkbox" id="stats-toggle" onchange="toggleStats(this)">
+                <span>Estatísticas</span>
+            </label>
+             <label class="setting-item" style="border-top:1px solid rgba(0,0,0,0.1); padding-top:8px; margin-top:5px;">
+                <input type="checkbox" id="colors-toggle" onchange="toggleColors(this)" checked>
+                <span>🎨 Realçar Gatilhos</span>
+            </label>
+            <div class="setting-item" onclick="manageStats()">
+                <span>📊 Zerar/Editar Stats</span>
+            </div>
+        </div>
+        <span class="card-id">ID: {{ID}}</span>
+    </div>
+</div>
+
+<script>
+    var cardId = "{{ID}}";
+    var correctRaw = "{{Resposta Correta}}".trim().toUpperCase();
+    var correctLetter = correctRaw.charAt(0); 
+
+    var userAns = sessionStorage.getItem("anki_ans_" + cardId);
+    var canScore = sessionStorage.getItem("anki_can_score_" + cardId) === "true";
+
+    var elCorrect = document.getElementById('res-container-' + correctLetter);
+    if(elCorrect) elCorrect.classList.add('correto');
+
+    var banner = document.getElementById('res-banner');
+
+    if(userAns === correctLetter) {
+        banner.innerText = "🎉 Acertou!";
+        banner.className = "banner-resultado acerto";
+        if(canScore) {
+            updateStats(cardId, true);
+            sessionStorage.setItem("anki_can_score_" + cardId, "false"); 
+        }
+    } else {
+        if(userAns) {
+            banner.innerText = "❌ Errou! Você marcou " + userAns;
+            banner.className = "banner-resultado erro";
+            var elWrong = document.getElementById('res-container-' + userAns);
+            if(elWrong) elWrong.classList.add('errado');
+            if(canScore) {
+                updateStats(cardId, false);
+                sessionStorage.setItem("anki_can_score_" + cardId, "false");
+            }
+        } else {
+            banner.innerText = "👁️ Apenas Visualizando";
+            banner.style.color = "#888";
+        }
+    }
+
+    function updateStats(id, isOk) {
+        var db = JSON.parse(localStorage.getItem('anki_stats_v1') || '{}');
+        if(!db[id]) db[id] = { ok: 0, nok: 0 };
+        if(isOk) db[id].ok++; else db[id].nok++;
+        localStorage.setItem('anki_stats_v1', JSON.stringify(db));
+    }
+
+    function renderStats() {
+        var area = document.getElementById('stats-area');
+        var show = localStorage.getItem('anki_show_stats_pref') === 'true';
+        if(!show) { area.style.display = 'none'; return; }
+        area.style.display = 'flex';
+        var db = JSON.parse(localStorage.getItem('anki_stats_v1') || '{}');
+        var data = db[cardId] || { ok: 0, nok: 0 };
+        var total = data.ok + data.nok;
+        var p = total === 0 ? 0 : Math.round((data.ok / total) * 100);
+        document.getElementById('card-pie').style.setProperty('--p', p + '%');
+        document.getElementById('txt-ok').innerText = 'Acertos: ' + data.ok + ' (' + p + '%)';
+        document.getElementById('txt-nok').innerText = 'Erros: ' + data.nok + ' (' + (total===0 ? 0 : 100-p) + '%)';
+    }
+
+    window.toggleSettings = function() {
+        var pnl = document.getElementById('settings-pnl');
+        pnl.style.display = pnl.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    // Gerenciamento de Cores
+    function initColorCheck() {
+        var chk = document.getElementById('colors-toggle');
+        var pref = localStorage.getItem('anki_colors_pref');
+        var isEnabled = pref === null ? true : (pref === 'true'); 
+        if(chk) chk.checked = isEnabled;
+        applyColors(isEnabled);
+    }
+    window.toggleColors = function(el) {
+        var isEnabled = el.checked;
+        localStorage.setItem('anki_colors_pref', isEnabled);
+        applyColors(isEnabled);
+    }
+    function applyColors(isEnabled) {
+        var container = document.querySelector('.anki-card-container');
+        if(container) {
+            if(isEnabled) container.classList.remove('disable-colors');
+            else container.classList.add('disable-colors');
+        }
+    }
+
+    window.manageStats = function() {
+        var db = JSON.parse(localStorage.getItem('anki_stats_v1') || '{}');
+        var data = db[cardId] || { ok: 0, nok: 0 };
+        var choice = prompt("Gerenciar Stats (ID: " + cardId + ")\\n✅ " + data.ok + " | ❌ " + data.nok + "\\n\\n0 - Zerar\\n1 - Editar");
+        if (choice === '0') { db[cardId] = { ok: 0, nok: 0 }; alert("Zerado."); }
+        else if (choice === '1') {
+            var o = prompt("Novos Acertos:", data.ok); var n = prompt("Novos Erros:", data.nok);
+            if (o!==null&&n!==null) db[cardId] = { ok: parseInt(o)||0, nok: parseInt(n)||0 };
+        }
+        localStorage.setItem('anki_stats_v1', JSON.stringify(db));
+        renderStats();
+    };
+
+    var currentZoom = parseFloat(localStorage.getItem('anki_zoom_pref')) || 1;
+    function applyZoom() { document.querySelector('.conteudo').style.zoom = currentZoom; }
+    window.zoom = function(val) {
+        currentZoom += val;
+        if(currentZoom < 0.5) currentZoom = 0.5;
+        localStorage.setItem('anki_zoom_pref', currentZoom);
+        applyZoom();
+    }
+    applyZoom();
+
+    function initStatsCheck() {
+        var chk = document.getElementById('stats-toggle');
+        if(chk) chk.checked = localStorage.getItem('anki_show_stats_pref') === 'true';
+    }
+    window.toggleStats = function(el) { localStorage.setItem('anki_show_stats_pref', el.checked); renderStats(); }
+    initStatsCheck();
+
+    window.toggleEl = function(id) {
+        var el = document.getElementById(id);
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+    renderStats();
+    initColorCheck();
+<\/script>`;
+
+            // CSS Atualizado (V34) - Justificado + Cores Ricas + Toggle Desativar
+            const defaultCSS = `/* --- CONFIGURAÇÕES GERAIS --- */
+.card { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 20px; background-color: var(--bg-body); color: var(--text-primary); line-height: 1.6; margin: 0; }
+:root {
+    /* MODO DIURNO */
+    --bg-body: #f4f7f6; --card-bg: #ffffff; --text-primary: #2c3e50; --text-secondary: #7f8c8d; --brand-color: #3498db; --brand-dark: #2980b9; --prof-bg: #f8f9fa; --prof-border: #3498db; --prof-text: #2c3e50; --prof-header-text: #2980b9; --success-bg: #e8f8f5; --success-border: #2ecc71; --success-text: #27ae60; --error-bg: #fdedec; --error-border: #e74c3c; --error-text: #c0392b; --radius: 12px; --shadow-card: 0 8px 30px rgba(0,0,0,0.08); --option-border: rgba(0,0,0,0.05); --option-hover-shadow: rgba(52, 152, 219, 0.15); --spoiler-bg: rgba(0,0,0,0.02); --spoiler-hover: rgba(0,0,0,0.05);
+}
+.nightMode {
+    /* MODO NOTURNO */
+    --bg-body: #2e2e2e; --card-bg: #1e1e1e; --text-primary: #e0e0e0; --text-secondary: #b0b0b0; --brand-color: #5dade2; --brand-dark: #85c1e9; --prof-bg: #2d3436; --prof-border: #5dade2; --prof-text: #ecf0f1; --prof-header-text: #85c1e9; --success-bg: #1e3a2a; --success-border: #27ae60; --success-text: #82e0aa; --error-bg: #4a2323; --error-border: #c0392b; --error-text: #e6b0aa; --shadow-card: 0 8px 30px rgba(0,0,0,0.5); --option-border: rgba(255,255,255,0.1); --option-hover-shadow: rgba(93, 173, 226, 0.2); --spoiler-bg: rgba(255,255,255,0.05); --spoiler-hover: rgba(255,255,255,0.1);
+}
+
+/* --- GATILHOS DE PROVA (PALETA COMPLETA) --- */
+.g-red { color: #e74c3c; font-weight: bold; } 
+.g-org { color: #e67e22; font-weight: bold; }
+.g-blue { color: #3498db; font-weight: bold; } 
+.g-purp { color: #9b59b6; font-weight: bold; } 
+.g-grn { color: #27ae60; font-weight: bold; } 
+.g-yell { color: #f1c40f; font-weight: bold; text-shadow: 1px 1px 0 rgba(0,0,0,0.1); } 
+.g-grey { color: #7f8c8d; font-weight: bold; } 
+.nightMode .g-yell { color: #f39c12; text-shadow: none; }
+
+/* --- MODO SEM CORES (OVERRIDE) --- */
+.disable-colors .g-red, 
+.disable-colors .g-org, 
+.disable-colors .g-blue, 
+.disable-colors .g-purp, 
+.disable-colors .g-grn, 
+.disable-colors .g-yell, 
+.disable-colors .g-grey {
+    color: inherit !important;
+    font-weight: inherit !important;
+    background: none !important;
+    text-shadow: none !important;
+}
+
+/* --- PAINEL & LAYOUT --- */
+.footer { padding: 15px 30px; background: var(--spoiler-bg); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-secondary); position: relative; }
+.settings-trigger { cursor: pointer; opacity: 0.7; transition: opacity 0.2s; user-select: none; }
+.settings-trigger:hover { opacity: 1; color: var(--brand-color); }
+.settings-panel { display: none; position: absolute; bottom: 40px; left: 20px; background: var(--card-bg); border: 1px solid var(--option-border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; z-index: 100; flex-direction: column; gap: 8px; min-width: 180px; animation: popIn 0.2s; }
+.setting-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--text-primary); cursor: pointer; }
+.zoom-controls { gap: 5px; }
+.mini-btn { background: var(--spoiler-bg); border: 1px solid var(--option-border); border-radius: 4px; width: 24px; height: 24px; cursor: pointer; color: var(--text-primary); font-weight: bold; }
+.mini-btn:hover { background: var(--brand-color); color: white; }
+.stats-box { margin-top: 20px; padding: 15px; background: var(--spoiler-bg); border-radius: 8px; display: none; align-items: center; justify-content: center; gap: 20px; animation: fadeIn 0.5s; border: 1px dashed var(--option-border); }
+.pie-chart { width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(var(--success-border) var(--p, 0%), var(--error-border) 0); position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.pie-chart::after { content: ""; position: absolute; inset: 10px; background: var(--card-bg); border-radius: 50%; }
+.stats-legend { font-size: 13px; display: flex; flex-direction: column; gap: 5px; color: var(--text-secondary); }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.ok { background: var(--success-border); }
+.dot.nok { background: var(--error-border); }
+.selected-temp .check-icon { background: var(--brand-color); border-color: var(--brand-color); opacity: 1; }
+.selected-temp .check-icon::after { content: "✓"; color: white; position: absolute; left: 6px; top: -1px; font-weight: bold; font-size: 14px; }
+.selected-temp { border-color: var(--brand-color) !important; background-color: var(--spoiler-bg); box-shadow: 0 0 0 1px var(--brand-color) inset; }
+.container-opcao.riscado { opacity: 0.6; text-decoration: none; }
+.container-opcao.riscado .texto-coluna { text-decoration: line-through; color: var(--error-border); }
+.key-term { color: var(--brand-color); font-weight: bold; background: rgba(0,122,204,0.1); padding: 0 4px; border-radius: 3px; }
+
+/* Justificado & Alinhamento */
+.prof-box { 
+    border-left: 4px solid var(--prof-border); 
+    padding: 15px; 
+    background: var(--prof-bg); 
+    color: var(--prof-text); 
+    margin: 15px 0; 
+    border-radius: 4px; 
+    text-align: justify; /* Justificado */
+    text-justify: inter-word; 
+}
+.prof-header { font-weight: bold; color: var(--prof-header-text); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.5px; }
+
+#PerguntaTexto { 
+    margin-bottom: 25px; 
+    text-align: justify; /* Justificado */
+    text-justify: inter-word;
+}
+#PerguntaTexto p { margin-bottom: 1em; margin-top: 0; }
+#PerguntaTexto ul { margin-left: 20px; margin-bottom: 1em; }
+#PerguntaTexto li { margin-bottom: 0.5em; }
+
+.texto-oculto { 
+    background: var(--prof-bg); 
+    padding: 15px; 
+    border-radius: 8px; 
+    border-left: 4px solid var(--brand-color); 
+    font-size: 16px; 
+    margin-bottom: 25px; 
+    color: var(--text-secondary); 
+    display: none; 
+    animation: fadeIn 0.3s ease;
+    text-align: justify; /* Justificado */
+    text-justify: inter-word;
+}
+
+.anki-card-container { max-width: 680px; margin: 30px auto; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow-card); overflow: hidden; position: relative; text-align: left; border: 1px solid var(--option-border); }
+.cabeçalho { background: linear-gradient(135deg, var(--brand-color), var(--brand-dark)); padding: 20px 25px; border-bottom: 3px solid rgba(0,0,0,0.1); position: relative; overflow: hidden; color: white; }
+.cabeçalho::after { content: ""; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; pointer-events: none; }
+.materia-container { display: inline-block; margin-bottom: 10px; }
+.tag-materia { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.2); color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(4px); }
+.tag-materia:empty { display: none; }
+.titulo-assunto { color: #fff; margin: 0; font-size: 24px; font-weight: 800; line-height: 1.3; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+.conteudo { padding: 30px; }
+.toggle-btn { display: table; margin: 0 auto 20px; background: transparent; border: 2px solid var(--brand-color); color: var(--brand-color); padding: 8px 20px; border-radius: 50px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.toggle-btn:hover { background: var(--brand-color); color: white; transform: translateY(-2px); }
+
+.container-opcao, .back-option-container { display: flex; align-items: flex-start; padding: 16px; margin-bottom: 12px; background: var(--card-bg); border: 2px solid var(--option-border); border-radius: 12px; cursor: pointer; transition: all 0.2s; position: relative; user-select: none; }
+.container-opcao:hover { border-color: var(--brand-color); transform: translateY(-2px); box-shadow: 0 4px 15px var(--option-hover-shadow); }
+.check-icon { width: 24px; height: 24px; min-width: 24px; border: 2px solid var(--text-secondary); border-radius: 50%; margin-right: 15px; margin-top: 2px; position: relative; transition: all 0.2s; opacity: 0.5; }
+.letra-coluna { font-weight: 800; color: var(--brand-color); margin-right: 10px; min-width: 25px; margin-top: 2px; }
+.texto-coluna { flex: 1; word-break: break-word; }
+.banner-resultado { text-align: center; padding: 15px; border-radius: 12px; margin-bottom: 25px; font-weight: 800; font-size: 18px; letter-spacing: 0.5px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.banner-resultado.acerto { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+.banner-resultado.erro { background: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border); }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+`;
+
+            const sampleCard = {
+                ID: 'EX-001',
+                Banca: 'Simulado',
+                Matéria: 'Direito Constitucional',
+                Assunto: 'Direitos Fundamentais',
+                'Texto Associado': '',
+                Questão:
+                    "Assinale a alternativa que apresenta um <span class='g-org'>prazo de 5 dias</span> para mandado de segurança. É <span class='g-red'>vedado</span> o uso banalizado deste remédio constitucional.",
+                'Opção 1 (A)': 'Direito ao esquecimento total.',
+                'Opção 2 (B)': "Direito à <span class='g-blue'>vida</span>.",
+                'Opção 3 (C)': 'Direito de dirigir sem habilitação.',
+                'Opção 4 (D)': 'Direito de intervir em outros países.',
+                'Opção 5 (E)': 'Direito absoluto de propriedade.',
+                'Resposta Correta': 'B',
+                'Explicação Universal':
+                    "<div class='prof-box'><div class='prof-header'>🎓 Resumo do Professor</div>O <span class='g-blue'>Direito à Vida</span> é a base de todos os outros. O Mandado de Segurança exige direito líquido e certo. É <span class='g-red'>vedado</span> seu uso sem prova pré-constituída. <span class='g-purp'>Caso</span> haja dúvida, indefere-se. O prazo decadencial é de <span class='g-org'>120 dias</span>."
+            };
+
+            async function init() {
+                const saved = localStorage.getItem('anki_deck_v34');
+                deck = saved ? JSON.parse(saved) : [JSON.parse(JSON.stringify(sampleCard))];
+                document.getElementById('code-front').value = localStorage.getItem('anki_f34') || defaultFront;
+                document.getElementById('code-back').value = localStorage.getItem('anki_b34') || defaultBack;
+                document.getElementById('code-css').value = localStorage.getItem('anki_c34') || defaultCSS;
+                renderFields();
+                document.querySelectorAll('textarea').forEach((t) => {
+                    t.oninput = () => {
+                        localStorage.setItem(
+                            'anki_html_' +
+                                (t.id.includes('front') ? 'f34' : t.id.includes('back') ? 'b34' : 'c34'),
+                            t.value
+                        );
+                        updatePreview();
+                    };
+                });
+                window.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' && document.activeElement.tagName !== 'TEXTAREA') {
+                        e.preventDefault();
+                        flipCard();
+                    }
+                });
+            }
+
+            function renderFields() {
+                const container = document.getElementById('fields-container');
+                container.innerHTML = '';
+                const current = deck[currentCardIndex];
+
+                if (!current) return;
+                const fieldOrder = [
+                    'ID',
+                    'Banca',
+                    'Matéria',
+                    'Assunto',
+                    'Texto Associado',
+                    'Questão',
+                    'Opção 1 (A)',
+                    'Opção 2 (B)',
+                    'Opção 3 (C)',
+                    'Opção 4 (D)',
+                    'Opção 5 (E)',
+                    'Resposta Correta',
+                    'Explicação Universal'
+                ];
+
+                fieldOrder.forEach((key) => {
+                    const val = current[key] || '';
+                    const div = document.createElement('div');
+                    div.className = 'field-group';
+                    div.innerHTML = `<label>${key}</label><textarea class="field-input" data-field="${key}" rows="${key.length > 10 || key === 'Texto Associado' || key === 'Questão' || key === 'Explicação Universal' ? 4 : 2}">${val}</textarea>`;
+                    const input = div.querySelector('textarea');
+                    input.oninput = (e) => {
+                        deck[currentCardIndex][key] = e.target.value;
+                        localStorage.setItem('anki_deck_v34', JSON.stringify(deck));
+                        updatePreview();
+                    };
+                    container.appendChild(div);
+                });
+                document.getElementById('deck-counter').innerText = `Card ${currentCardIndex + 1} / ${deck.length}`;
+                updatePreview();
+            }
+
+            function escapeRegex(str) {
+                return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            function updatePreview() {
+                const css = document.getElementById('code-css').value;
+                const html =
+                    currentSide === 'front' ? document.getElementById('code-front').value : document.getElementById('code-back').value;
+                document.getElementById('style-injection').innerHTML = `<style>${css}</style>`;
+
+                let processed = html;
+                const data = deck[currentCardIndex] || {};
+
+                const regBlock = /{{#(.+?)}}([\s\S]*?){{\/\1}}/g;
+                processed = processed.replace(regBlock, (m, k, c) => (data[k] && data[k].trim() ? c : ''));
+                Object.entries(data).forEach(([k, v]) => {
+                    processed = processed.replace(new RegExp(`{{${escapeRegex(k)}}}`, 'g'), v || '');
+                });
+
+                const wrapper = document.getElementById('anki-wrapper');
+                const canvas = document.getElementById('card-preview');
+
+                if (isDarkMode) {
+                    wrapper.className = 'nightMode';
+                    canvas.style.backgroundColor = '#2e2e2e';
+                } else {
+                    wrapper.className = '';
+                    canvas.style.backgroundColor = '#e0e0e0';
+                }
+
+                canvas.innerHTML = processed.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, '');
+                html.match(/<script\b[^>]*>([\s\S]*?)<\/script>/gim)?.forEach((sTag) => {
+                    try {
+                        const ns = document.createElement('script');
+                        ns.textContent = sTag.replace(/<\/?script[^>]*>/g, '');
+                        document.body.appendChild(ns).parentNode.removeChild(ns);
+                    } catch (err) {}
+                });
+
+                const flipBtn = document.getElementById('btn-flip');
+                if (currentSide === 'front') {
+                    if (flipBtn) flipBtn.style.display = 'block';
+                } else {
+                    if (flipBtn) flipBtn.style.display = 'none';
+                }
+            }
+
+            function toggleDarkModePreview() {
+                isDarkMode = !isDarkMode;
+                updatePreview();
+            }
+
+            function cleanAndParseJSON(str) {
+                try {
+                    return JSON.parse(str);
+                } catch (e) {
+                    console.log('JSON parse error, attempting repair...');
+                    let clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
+                    if (!clean.endsWith(']')) {
+                        const lastClose = clean.lastIndexOf('}');
+                        if (lastClose !== -1) {
+                            clean = clean.substring(0, lastClose + 1) + ']';
+                        }
+                    }
+                    try {
+                        return JSON.parse(clean);
+                    } catch (e2) {
+                        console.error('Failed to repair JSON:', e2);
+                        return [];
+                    }
+                }
+            }
+
+            function clearDeck() {
+                if (confirm('Tem certeza que deseja apagar TODOS os cards importados e as estatísticas?')) {
+                    const newSample = JSON.parse(JSON.stringify(sampleCard));
+                    newSample.ID = 'EX-' + Math.floor(Math.random() * 9999);
+                    deck = [newSample];
+                    currentCardIndex = 0;
+                    localStorage.removeItem('anki_stats_v1');
+                    renderFields();
+                    localStorage.setItem('anki_deck_v34', JSON.stringify(deck));
+                    showStatus('Tudo limpo!');
+                }
+            }
+
+            function flipCard() {
+                currentSide = currentSide === 'front' ? 'back' : 'front';
+                updatePreview();
+            }
+            function prevCard() {
+                if (currentCardIndex > 0) {
+                    currentCardIndex--;
+                    renderFields();
+                }
+            }
+            function nextCard() {
+                if (currentCardIndex < deck.length - 1) {
+                    currentCardIndex++;
+                    renderFields();
+                }
+            }
+
+            function addNewCard() {
+                const newCard = JSON.parse(JSON.stringify(sampleCard));
+                newCard.ID = 'NEW-' + Date.now();
+                deck.push(newCard);
+                currentCardIndex = deck.length - 1;
+                renderFields();
+            }
+
+            function deleteCurrentCard() {
+                if (deck.length <= 1) return;
+                if (confirm('Apagar?')) {
+                    deck.splice(currentCardIndex, 1);
+                    currentCardIndex = Math.max(0, currentCardIndex - 1);
+                    renderFields();
+                    localStorage.setItem('anki_deck_v34', JSON.stringify(deck));
+                }
+            }
+            function switchTab(t, b) {
+                document.querySelectorAll('.tab').forEach((x) => x.classList.remove('active'));
+                document.querySelectorAll('.editor-container').forEach((x) => x.classList.remove('active'));
+                b.classList.add('active');
+                document.getElementById('editor-' + t).classList.add('active');
+            }
+            function openImportModal() {
+                document.getElementById('import-modal').style.display = 'flex';
+            }
+            function closeImportModal() {
+                document.getElementById('import-modal').style.display = 'none';
+            }
+            function showStatus(m) {
+                const s = document.getElementById('status-msg');
+                s.innerText = m;
+                s.style.display = 'block';
+                setTimeout(() => (s.style.display = 'none'), 3000);
+            }
+
+            async function startUltraProcess() {
+                const file = document.getElementById('pdf-input').files[0];
+                if (!file) return alert('Selecione o PDF.');
+                const loading = document.getElementById('loading-ia');
+                const lSub = document.getElementById('loading-subtext');
+                const lBar = document.getElementById('main-progress');
+                loading.style.display = 'flex';
+                closeImportModal();
+
+                try {
+                    const buffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+
+                    let gabaritoText = '';
+                    const startPageGab = Math.max(1, pdf.numPages - 2);
+                    for (let p = startPageGab; p <= pdf.numPages; p++) {
+                        const pg = await pdf.getPage(p);
+                        const ct = await pg.getTextContent();
+                        gabaritoText += ct.items.map((i) => i.str).join(' ');
+                    }
+
+                    const CHUNK_SIZE = 2;
+                    let chunks = [];
+                    for (let i = 1; i <= pdf.numPages; i += CHUNK_SIZE) chunks.push(i);
+
+                    let completed = 0;
+                    const processBlock = async (start) => {
+                        let text = '';
+                        for (let j = start; j < start + CHUNK_SIZE && j <= pdf.numPages; j++) {
+                            const page = await pdf.getPage(j);
+                            const content = await page.getTextContent();
+                            text += `--- PAGE ${j} ---\n` + content.items.map((it) => it.str).join(' ') + '\n';
+                        }
+
+                        const prompt = `Atue como um Especialista de Elite em Análise de Questões.
+
+REGRAS DE OURO:
+1. **TEXTO LIMPO NA QUESTÃO:** Na pergunta e opções, mantenha o texto limpo, usando APENAS as cores Vermelha (Perigo) e Laranja (Dados). Use Azul apenas se for estritamente um termo técnico.
+2. **RESUMO DO PROFESSOR (RICO):** No campo "Explicação Universal", use TODAS AS CORES disponíveis para criar um resumo estilo "mapa mental", rico e didático.
+3. **FORMATO:** HTML <span> com classes.
+
+TABELA DE GATILHOS (USO HÍBRIDO):
+
+🔴 <span class='g-red'>[CRÍTICO]</span> (VERMELHO): Negação, Exceção, Proibição, Absolutos (Sempre/Nunca).
+🟠 <span class='g-org'>[DADOS]</span> (LARANJA): Números, Prazos, Percentuais.
+🔵 <span class='g-blue'>[CONCEITOS]</span> (AZUL): Termos Técnicos, Nomes de Leis (Use muito no Resumo).
+🟣 <span class='g-purp'>[CONDIÇÃO]</span> (ROXO): Se, Caso, Desde que (Use muito no Resumo).
+🟢 <span class='g-grn'>[FLEXÍVEL]</span> (VERDE): Pode, Em regra (Use muito no Resumo).
+
+ESTRUTURA DE SAÍDA (JSON):
+Extraia: ID, Banca, Matéria, Assunto, Texto Associado (Vazio), Questão (Com spans básicos), Opções (Com spans básicos), Resposta Correta (Letra), Explicação Universal (Com MUITOS spans variados).
+
+Gabarito Ref: ${gabaritoText}. Contexto: ${text}`;
+
+                        const res = await callGemini({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: {
+                                responseMimeType: 'application/json',
+                                responseSchema: {
+                                    type: 'ARRAY',
+                                    items: {
+                                        type: 'OBJECT',
+                                        properties: {
+                                            ID: { type: 'STRING' },
+                                            Banca: { type: 'STRING' },
+                                            Matéria: { type: 'STRING' },
+                                            Assunto: { type: 'STRING' },
+                                            'Texto Associado': { type: 'STRING' },
+                                            Questão: { type: 'STRING' },
+                                            'Opção 1 (A)': { type: 'STRING' },
+                                            'Opção 2 (B)': { type: 'STRING' },
+                                            'Opção 3 (C)': { type: 'STRING' },
+                                            'Opção 4 (D)': { type: 'STRING' },
+                                            'Opção 5 (E)': { type: 'STRING' },
+                                            'Resposta Correta': { type: 'STRING' },
+                                            'Explicação Universal': { type: 'STRING' }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        completed++;
+                        lBar.style.width = Math.round((completed / chunks.length) * 100) + '%';
+                        lSub.innerText = `Processando bloco ${completed}/${chunks.length}...`;
+                        return cleanAndParseJSON(res);
+                    };
+
+                    const BATCH_SIZE = 4;
+                    let results = [];
+                    for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+                        const batch = chunks.slice(i, i + BATCH_SIZE);
+                        const batchRes = await Promise.all(batch.map((s) => processBlock(s)));
+                        batchRes.forEach((r) => {
+                            if (Array.isArray(r)) results.push(...r.map((item) => ({ ...defaultCardStructure, ...item })));
+                        });
+                    }
+
+                    const seenIds = new Set();
+                    const uniqueResults = results.filter((r) => {
+                        if (!r.ID || seenIds.has(r.ID)) return false;
+                        seenIds.add(r.ID);
+                        return true;
+                    });
+
+                    deck = [...deck, ...uniqueResults];
+                    localStorage.setItem('anki_deck_v34', JSON.stringify(deck));
+                    currentCardIndex = Math.max(0, deck.length - uniqueResults.length);
+                    renderFields();
+                    showStatus(`${uniqueResults.length} questões extraídas com sucesso!`);
+                } catch (e) {
+                    console.error(e);
+                    alert('Erro: ' + e.message);
+                } finally {
+                    loading.style.display = 'none';
+                }
+            }
+
+            async function callGemini(payload) {
+                let retries = 0;
+                while (retries < 5) {
+                    try {
+                        const res = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+                            {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            }
+                        );
+                        const d = await res.json();
+                        if (!d.candidates || !d.candidates[0].content) throw new Error('API Error');
+                        return d.candidates[0].content.parts[0].text;
+                    } catch (e) {
+                        retries++;
+                        await new Promise((x) => setTimeout(x, 2000 * Math.pow(2, retries)));
+                    }
+                }
+                throw new Error('Falha na conexão com IA');
+            }
+
+            function exportStructuredCSV() {
+                if (deck.length === 0) return alert('Vazio.');
+                const headers = [
+                    'ID',
+                    'Banca',
+                    'Matéria',
+                    'Assunto',
+                    'Texto Associado',
+                    'Questão',
+                    'Opção 1 (A)',
+                    'Opção 2 (B)',
+                    'Opção 3 (C)',
+                    'Opção 4 (D)',
+                    'Opção 5 (E)',
+                    'Resposta Correta',
+                    'Explicação Universal'
+                ];
+                let csv = headers.join(';') + '\n';
+                deck.forEach((d) => {
+                    const row = headers.map((h) => {
+                        let val = d[h] || '';
+                        if (h === 'Resposta Correta') {
+                            let match = val.toString().toUpperCase().match(/[ABCDE]/);
+                            if (match) val = match[0];
+                        }
+                        return `"${val.toString().replace(/"/g, '""').replace(/\n/g, ' ')}"`;
+                    });
+                    csv += row.join(';') + '\n';
+                });
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'simulado_anki_13_colunas.csv';
+                a.click();
+            }
+
+            window.onload = init;
+        </script>
+    </body>
+</html>
